@@ -32,6 +32,10 @@ public class CakeProperties {
         }
     }
 
+    public boolean exists() {
+        return Files.exists(this.filePath);
+    }
+
     /**
      * Register.
      *
