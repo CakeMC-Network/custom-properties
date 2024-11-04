@@ -11,6 +11,7 @@ plugins {
 
     id("maven-publish")
     id("com.gradleup.shadow") version "8.3.0"
+    kotlin("jvm")
 }
 
 group = "net.cakemc.util"
@@ -43,6 +44,7 @@ repositories {
 
 dependencies {
     // no dependencies
+    implementation(kotlin("stdlib-jdk8"))
 }
 
 
@@ -52,8 +54,6 @@ java {
 }
 
 tasks.withType<JavaCompile> {
-    sourceCompatibility = jdkVersionString
-    targetCompatibility = jdkVersionString
     options.encoding = StandardCharsets.UTF_8.toString()
 }
 
@@ -85,4 +85,7 @@ publishing {
             isAllowInsecureProtocol = true
         }
     }
+}
+kotlin {
+    jvmToolchain(21)
 }

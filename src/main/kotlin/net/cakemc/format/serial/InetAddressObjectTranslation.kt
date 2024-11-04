@@ -1,24 +1,22 @@
-package net.cakemc.format.serial;
+package net.cakemc.format.serial
 
-import net.cakemc.format.CakeProperties;
+import net.cakemc.format.CakeProperties
+import java.io.IOException
+import java.net.InetSocketAddress
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
+class InetAddressObjectTranslation : ObjectTranslation<InetSocketAddress>() {
 
-public class InetAddressObjectTranslation extends ObjectTranslation<InetSocketAddress> {
-
-    @Override
-    public InetSocketAddress deserialize(String key, CakeProperties properties) throws IOException {
-        return new InetSocketAddress(
-                properties.getString("%s.%s".formatted(key, "host")),
-                properties.getInt("%s.%s".formatted(key, "port"))
-        );
+    @Throws(IOException::class)
+    override fun deserialize(key: String, properties: CakeProperties): InetSocketAddress {
+        val host = properties.getString("$key.host")
+        val port = properties.getInt("$key.port")
+        return port?.let { InetSocketAddress(host, it) }!!
     }
 
-    @Override
-    public void serialize(String key, CakeProperties properties, InetSocketAddress object) throws IOException {
-        properties.appendString("%s.%s".formatted(key, "host"), object.getHostName());
-        properties.appendInt("%s.%s".formatted(key, "port"), object.getPort());
+    @Throws(IOException::class)
+    override fun serialize(key: String, properties: CakeProperties, obj: InetSocketAddress) {
+        properties.appendString("$key.host", obj.hostName)
+        properties.appendInt("$key.port", obj.port)
     }
 
 }

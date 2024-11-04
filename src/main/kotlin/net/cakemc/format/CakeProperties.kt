@@ -1,39 +1,36 @@
-package net.cakemc.format;
+package net.cakemc.format
 
-import net.cakemc.format.serial.CakeObjectSerializer;
-import net.cakemc.format.serial.ObjectTranslation;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
-import java.util.*;
+import net.cakemc.format.serial.CakeObjectSerializer
+import net.cakemc.format.serial.ObjectTranslation
+import java.io.IOException
+import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.nio.file.StandardOpenOption
 
 /**
  * The type Cake properties.
  */
-public class CakeProperties {
+class CakeProperties(filePath: String) {
+    private val filePath: Path = Paths.get(filePath)
+    private val properties: MutableMap<String, String> = LinkedHashMap()
 
-    private final Path filePath;
-    private final Map<String, String> properties = new LinkedHashMap<>();
-
-    private final CakeObjectSerializer serializer;
+    private val serializer = CakeObjectSerializer()
 
     /**
      * Instantiates a new Cake properties.
      *
      * @param filePath the file path
      */
-    public CakeProperties(String filePath) {
-        this.filePath = Paths.get(filePath);
-        this.serializer = new CakeObjectSerializer();
-
+    init {
         if (Files.exists(this.filePath)) {
-            loadProperties();
+            loadProperties()
         }
     }
 
-    public boolean exists() {
-        return Files.exists(this.filePath);
+    fun exists(): Boolean {
+        return Files.exists(this.filePath)
     }
 
     /**
@@ -42,19 +39,19 @@ public class CakeProperties {
      * @param <T>         the type parameter
      * @param clazz       the clazz
      * @param translation the translation
-     */
-    public <T> void register(Class<T> clazz, ObjectTranslation<T> translation) {
-        serializer.register(clazz, translation);
+    </T> */
+    fun <T> register(clazz: Class<T>, translation: ObjectTranslation<T>) {
+        serializer.register(clazz, translation)
     }
 
     /**
      * Load properties.
      */
-    public void loadProperties() {
+    fun loadProperties() {
         try {
-            this.loadProperties0();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            this.loadProperties0()
+        } catch (e: IOException) {
+            throw RuntimeException(e)
         }
     }
 
@@ -63,26 +60,27 @@ public class CakeProperties {
      *
      * @throws IOException the io exception
      */
-    public void loadProperties0() throws IOException {
-        List<String> lines = Files.readAllLines(filePath, StandardCharsets.UTF_8);
-        String currentGroup = null;
+    @Throws(IOException::class)
+    fun loadProperties0() {
+        val lines = Files.readAllLines(filePath, StandardCharsets.UTF_8)
+        var currentGroup: String? = null
 
-        for (String line : lines) {
-            if (line.startsWith("#"))
-                continue;
+        for (line in lines) {
+            var line = line
+            if (line.startsWith("#")) continue
 
-            line = line.trim();
+            line = line.trim { it <= ' ' }
             if (line.isEmpty()) {
-                continue;
+                continue
             }
             if (!line.contains("=")) {
-                currentGroup = line;
+                currentGroup = line
             } else {
-                String[] parts = line.split("=", 2);
-                if (parts.length == 2 && currentGroup != null) {
-                    String key = currentGroup + "." + parts[0].trim();
-                    String value = parts[1].trim().replace("\"", "");
-                    properties.put(key, value);
+                val parts = line.split("=".toRegex(), limit = 2).toTypedArray()
+                if (parts.size == 2 && currentGroup != null) {
+                    val key = currentGroup + "." + parts[0].trim { it <= ' ' }
+                    val value = parts[1].trim { it <= ' ' }.replace("\"", "")
+                    properties[key] = value
                 }
             }
         }
@@ -94,12 +92,12 @@ public class CakeProperties {
      * @param <T>    the type parameter
      * @param key    the key
      * @param object the object
-     */
-    public <T> void append(String key, T object) {
+    </T> */
+    fun <T> append(key: String, `object`: T) {
         try {
-            append0(key, object);
-        } catch (Throwable throwable) {
-            throw new RuntimeException(throwable);
+            append0(key, `object`)
+        } catch (throwable: Throwable) {
+            throw RuntimeException(throwable)
         }
     }
 
@@ -111,9 +109,10 @@ public class CakeProperties {
      * @param object the object
      * @throws IOException            the io exception
      * @throws IllegalAccessException the illegal access exception
-     */
-    public <T> void append0(String key, T object) throws IOException, IllegalAccessException {
-        this.serializer.serialize(this, key, object);
+    </T> */
+    @Throws(IOException::class, IllegalAccessException::class)
+    fun <T> append0(key: String, `object`: T) {
+        serializer.serialize(this, key, `object`)
     }
 
     /**
@@ -122,11 +121,11 @@ public class CakeProperties {
      * @param key   the key
      * @param value the value
      */
-    public void appendString(String key, String value) {
+    fun appendString(key: String, value: String) {
         try {
-            appendString0(key, value);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            appendString0(key, value)
+        } catch (e: IOException) {
+            throw RuntimeException(e)
         }
     }
 
@@ -137,12 +136,11 @@ public class CakeProperties {
      * @param value the value
      * @throws IOException the io exception
      */
-    public void appendString0(String key, String value) throws IOException {
+    @Throws(IOException::class)
+    fun appendString0(key: String, value: String) {
         if (!properties.containsKey(key)) {
-            properties.put(key, value);
-            saveProperties();
-        } else {
-            System.out.println("Key '" + key + "' already exists with value: " + properties.get(key));
+            properties[key] = value
+            saveProperties()
         }
     }
 
@@ -152,11 +150,11 @@ public class CakeProperties {
      * @param key   the key
      * @param value the value
      */
-    public void appendInt(String key, int value) {
+    fun appendInt(key: String, value: Int) {
         try {
-            appendInt0(key, value);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            appendInt0(key, value)
+        } catch (e: IOException) {
+            throw RuntimeException(e)
         }
     }
 
@@ -167,8 +165,9 @@ public class CakeProperties {
      * @param value the value
      * @throws IOException the io exception
      */
-    public void appendInt0(String key, int value) throws IOException {
-        appendString(key, Integer.toString(value));
+    @Throws(IOException::class)
+    fun appendInt0(key: String, value: Int) {
+        appendString(key, value.toString())
     }
 
     /**
@@ -177,11 +176,11 @@ public class CakeProperties {
      * @param key   the key
      * @param value the value
      */
-    public void appendLong(String key, long value) {
+    fun appendLong(key: String, value: Long) {
         try {
-            appendLong0(key, value);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            appendLong0(key, value)
+        } catch (e: IOException) {
+            throw RuntimeException(e)
         }
     }
 
@@ -192,8 +191,9 @@ public class CakeProperties {
      * @param value the value
      * @throws IOException the io exception
      */
-    public void appendLong0(String key, long value) throws IOException {
-        appendString(key, Long.toString(value));
+    @Throws(IOException::class)
+    fun appendLong0(key: String, value: Long) {
+        appendString(key, value.toString())
     }
 
     /**
@@ -202,11 +202,11 @@ public class CakeProperties {
      * @param key   the key
      * @param value the value
      */
-    public void appendDouble(String key, double value) {
+    fun appendDouble(key: String, value: Double) {
         try {
-            appendDouble0(key, value);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            appendDouble0(key, value)
+        } catch (e: IOException) {
+            throw RuntimeException(e)
         }
     }
 
@@ -217,8 +217,9 @@ public class CakeProperties {
      * @param value the value
      * @throws IOException the io exception
      */
-    public void appendDouble0(String key, double value) throws IOException {
-        appendString(key, Double.toString(value));
+    @Throws(IOException::class)
+    fun appendDouble0(key: String, value: Double) {
+        appendString(key, value.toString())
     }
 
     /**
@@ -227,11 +228,11 @@ public class CakeProperties {
      * @param key   the key
      * @param value the value
      */
-    public void appendBoolean(String key, boolean value) {
+    fun appendBoolean(key: String, value: Boolean) {
         try {
-            appendBoolean0(key, value);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            appendBoolean0(key, value)
+        } catch (e: IOException) {
+            throw RuntimeException(e)
         }
     }
 
@@ -242,8 +243,9 @@ public class CakeProperties {
      * @param value the value
      * @throws IOException the io exception
      */
-    public void appendBoolean0(String key, boolean value) throws IOException {
-        appendString(key, Boolean.toString(value));
+    @Throws(IOException::class)
+    fun appendBoolean0(key: String, value: Boolean) {
+        appendString(key, value.toString())
     }
 
     /**
@@ -252,11 +254,11 @@ public class CakeProperties {
      * @param key   the key
      * @param value the value
      */
-    public void appendChar(String key, char value) {
+    fun appendChar(key: String, value: Char) {
         try {
-            appendChar0(key, value);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            appendChar0(key, value)
+        } catch (e: IOException) {
+            throw RuntimeException(e)
         }
     }
 
@@ -267,8 +269,9 @@ public class CakeProperties {
      * @param value the value
      * @throws IOException the io exception
      */
-    public void appendChar0(String key, char value) throws IOException {
-        appendString(key, Character.toString(value));
+    @Throws(IOException::class)
+    fun appendChar0(key: String, value: Char) {
+        appendString(key, value.toString())
     }
 
     /**
@@ -278,12 +281,12 @@ public class CakeProperties {
      * @param key  the key
      * @param type the type
      * @return the t
-     */
-    public <T> T get(String key, Class<T> type) {
-        try {
-            return this.serializer.deserialize(this, key, type);
-        } catch (Throwable throwable) {
-            return null;
+    </T> */
+    fun <T> get(key: String, type: Class<T>): T? {
+        return try {
+            serializer.deserialize(this, key, type)
+        } catch (throwable: Throwable) {
+            null
         }
     }
 
@@ -293,8 +296,8 @@ public class CakeProperties {
      * @param key the key
      * @return the string
      */
-    public String getString(String key) {
-        return properties.get(key);
+    fun getString(key: String): String? {
+        return properties[key]
     }
 
     /**
@@ -303,11 +306,11 @@ public class CakeProperties {
      * @param key the key
      * @return the int
      */
-    public Integer getInt(String key) {
-        try {
-            return Integer.parseInt(getString(key));
-        } catch (NumberFormatException e) {
-            return null;
+    fun getInt(key: String): Int? {
+        return try {
+            getString(key)!!.toInt()
+        } catch (e: NumberFormatException) {
+            null
         }
     }
 
@@ -317,11 +320,11 @@ public class CakeProperties {
      * @param key the key
      * @return the long
      */
-    public Long getLong(String key) {
-        try {
-            return Long.parseLong(getString(key));
-        } catch (NumberFormatException e) {
-            return null;
+    fun getLong(key: String): Long? {
+        return try {
+            getString(key)!!.toLong()
+        } catch (e: NumberFormatException) {
+            null
         }
     }
 
@@ -331,11 +334,11 @@ public class CakeProperties {
      * @param key the key
      * @return the double
      */
-    public Double getDouble(String key) {
-        try {
-            return Double.parseDouble(getString(key));
-        } catch (NumberFormatException e) {
-            return null;
+    fun getDouble(key: String): Double? {
+        return try {
+            getString(key)!!.toDouble()
+        } catch (e: NumberFormatException) {
+            null
         }
     }
 
@@ -345,12 +348,12 @@ public class CakeProperties {
      * @param key the key
      * @return the boolean
      */
-    public Boolean getBoolean(String key) {
-        String value = getString(key);
-        if ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value)) {
-            return Boolean.parseBoolean(value);
+    fun getBoolean(key: String): Boolean? {
+        val value = getString(key)
+        if ("true".equals(value, ignoreCase = true) || "false".equals(value, ignoreCase = true)) {
+            return value.toBoolean()
         }
-        return null;
+        return null
     }
 
     /**
@@ -359,9 +362,9 @@ public class CakeProperties {
      * @param key the key
      * @return the char
      */
-    public Character getChar(String key) {
-        String value = getString(key);
-        return (value != null && value.length() == 1) ? value.charAt(0) : null;
+    fun getChar(key: String): Char? {
+        val value = getString(key)
+        return if ((value != null && value.length == 1)) value[0] else null
     }
 
     /**
@@ -371,11 +374,11 @@ public class CakeProperties {
      * @param defaultValue the default value
      * @return the or create
      */
-    public String getOrCreate(String key, String defaultValue) {
+    fun getOrCreate(key: String, defaultValue: String): String? {
         try {
-            return getOrCreate0(key, defaultValue);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            return getOrCreate0(key, defaultValue)
+        } catch (e: IOException) {
+            throw RuntimeException(e)
         }
     }
 
@@ -387,22 +390,23 @@ public class CakeProperties {
      * @return the or create 0
      * @throws IOException the io exception
      */
-    public String getOrCreate0(String key, String defaultValue) throws IOException {
+    @Throws(IOException::class)
+    fun getOrCreate0(key: String, defaultValue: String): String? {
         if (!properties.containsKey(key)) {
-            properties.put(key, defaultValue);
-            saveProperties();
+            properties[key] = defaultValue
+            saveProperties()
         }
-        return properties.get(key);
+        return properties[key]
     }
 
     /**
      * Save properties.
      */
-    public void saveProperties() {
+    fun saveProperties() {
         try {
-            this.saveProperties0();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            this.saveProperties0()
+        } catch (e: IOException) {
+            throw RuntimeException(e)
         }
     }
 
@@ -411,29 +415,31 @@ public class CakeProperties {
      *
      * @throws IOException the io exception
      */
-    public void saveProperties0() throws IOException {
-        Map<String, Map<String, String>> groupedProperties = new LinkedHashMap<>();
+    @Throws(IOException::class)
+    fun saveProperties0() {
+        val groupedProperties: MutableMap<String, MutableMap<String, String>> = LinkedHashMap()
 
-        for (Map.Entry<String, String> entry : properties.entrySet()) {
-            String fullKey = entry.getKey();
-
-            String[] keyParts = fullKey.split("\\.");
-            String group = keyParts[0] + "." + keyParts[1]; // e.g., test.message
-            String subKey = keyParts[2]; // e.g., first, second
-            groupedProperties.computeIfAbsent(group, k -> new LinkedHashMap<>()).put(subKey, entry.getValue());
+        for ((fullKey, value) in properties) {
+            val keyParts = fullKey.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+            val group = keyParts[0] + "." + keyParts[1] // e.g., test.message
+            val subKey = keyParts[2] // e.g., first, second
+            groupedProperties.computeIfAbsent(group) { k: String? -> LinkedHashMap() }[subKey] =
+                value
         }
 
-        List<String> lines = new ArrayList<>();
+        val lines: MutableList<String> = ArrayList()
 
-        for (Map.Entry<String, Map<String, String>> groupEntry : groupedProperties.entrySet()) {
-            lines.add(groupEntry.getKey());
-            for (Map.Entry<String, String> subEntry : groupEntry.getValue().entrySet()) {
-                lines.add("    " + subEntry.getKey() + " = \"" + subEntry.getValue() + "\"");
+        for ((key, value) in groupedProperties) {
+            lines.add(key)
+            for ((key1, value1) in value) {
+                lines.add("    $key1 = \"$value1\"")
             }
-            lines.add(""); // Extra line between groups
+            lines.add("") // Extra line between groups
         }
 
-        Files.write(filePath, lines, StandardCharsets.UTF_8,
-                StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+        Files.write(
+            filePath, lines, StandardCharsets.UTF_8,
+            StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING
+        )
     }
 }

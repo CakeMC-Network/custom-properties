@@ -1,23 +1,22 @@
-package net.cakemc.format.serial;
+package net.cakemc.format.serial
 
-import net.cakemc.format.CakeProperties;
+import net.cakemc.format.CakeProperties
+import java.io.IOException
+import java.util.*
 
-import java.io.IOException;
-import java.util.UUID;
+class UUIDObjectSerializer : ObjectTranslation<UUID>() {
 
-public class UUIDObjectSerializer extends ObjectTranslation<UUID> {
-
-    @Override
-    public UUID deserialize(String key, CakeProperties properties) throws IOException {
-        long most = properties.getLong("%s.%s".formatted(key, "most"));
-        long least = properties.getLong("%s.%s".formatted(key, "least"));
-        return new UUID(most, least);
+    @Throws(IOException::class)
+    override fun deserialize(key: String, properties: CakeProperties): UUID {
+        val most = properties.getLong("${key}.most")!!
+        val least = properties.getLong("${key}.least")!!
+        return UUID(most, least)
     }
 
-    @Override
-    public void serialize(String key, CakeProperties properties, UUID object) throws IOException {
-        properties.appendLong("%s.%s".formatted(key, "most"), object.getMostSignificantBits());
-        properties.appendLong("%s.%s".formatted(key, "least"), object.getLeastSignificantBits());
+    @Throws(IOException::class)
+    override fun serialize(key: String, properties: CakeProperties, `object`: UUID) {
+        properties.appendLong("${key}.most", `object`.mostSignificantBits)
+        properties.appendLong("${key}.least", `object`.leastSignificantBits)
     }
 
 }
